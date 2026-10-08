@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-10-03T16:05:09.405Z",
+  "totals": {
+    "publicRepos": 2,
+    "stars": 2,
+    "forks": 0
+  },
+  "languages": [
+    {
+      "name": "JavaScript",
+      "pct": 93.5
+    },
+    {
+      "name": "PowerShell",
+      "pct": 6.5
+    }
+  ],
+  "activity": {
+    "yearTotal": 7,
+    "summary": {
+      "contributions": 6,
+      "activeDays": 2,
+      "longestStreak": 2
+    }
+  },
+  "featured": {
+    "name": "dsh-notify-cues",
+    "stars": 2,
+    "commitCount": 4,
+    "buildSpanDays": 2
+  }
+}

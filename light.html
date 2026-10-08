@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INKWARD — 守墨</title>
+<meta name="description" content="Small tools for problems everyone quietly puts up with. Windows-first, Node ≥ 20.">
+<meta name="theme-color" content="#0E0E10">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="INKWARD — 守墨">
+<meta property="og:description" content="Small tools for problems everyone quietly puts up with.">
+<meta property="og:url" content="https://inkward.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preload" href="fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+
+<script>
+/* Runs before first paint: decide the theme and language from storage, and mark
+   that JS is available so the reveal styles only apply when something can undo
+   them. Inline and synchronous on purpose — any deferred version flashes. */
+(function () {
+  var d = document.documentElement;
+  d.classList.remove('no-js');
+  d.classList.add('js');
+  try {
+    var t = localStorage.getItem('inkward:theme');
+    var l = localStorage.getItem('inkward:lang');
+    d.setAttribute('data-theme', 'light');
+    else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+      /* The brief says dark is the default, so the OS preference only applies
+         when the visitor has never chosen. */
+      d.setAttribute('data-theme', 'dark');
+    }
+    d.setAttribute('data-lang', 'en');
+    else if ((navigator.language || '').toLowerCase().indexOf('zh') === 0) d.setAttribute('data-lang', 'zh');
+  } catch (e) { /* private mode — fall back to the defaults in the markup */ }
+})();
+</script>
+</head>
+
+<body>
+<div class="cursor" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<!-- The generative field. Fixed behind everything, and the only ornament on the
+     page. Painted by field.js on a Canvas 2D context. -->
+<div class="field-wrap" aria-hidden="true"><canvas id="field"></canvas></div>
+
+<!-- ------------------------------------------------------------------ nav -->
+<header class="nav">
+  <a class="wordmark" href="#top">INKWARD<span>.</span></a>
+
+  <div class="nav-meta">
+    <span data-only="en">Shanghai · UTC+8</span>
+    <span data-only="zh">上海 · UTC+8</span>
+
+    <div class="switch" role="group" aria-label="Language">
+      <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-set-lang="zh" aria-pressed="false">中</button>
+    </div>
+
+    <div class="switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="dark" aria-pressed="true">◐</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">◑</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ----------------------------------------------------------------- hero -->
+<section class="hero">
+  <div class="hero-rail">
+    <div class="hero-rail-inner">
+      <p class="eyebrow">
+        <b>◆</b>
+        <span data-only="en">Available for work — 2026</span>
+        <span data-only="zh">可接项目 — 2026</span>
+      </p>
+
+      <p class="lede" data-only="en">
+        Small tools for problems everyone quietly puts up with.
+      </p>
+      <p class="lede" data-only="zh">
+        写工具，解决那些每个人都默默忍受的小问题。
+      </p>
+
+      <ul class="rail-list">
+        <li>
+          <span data-only="en">Focus</span><span data-only="zh">方向</span>
+          <b data-only="en">Developer tooling</b><b data-only="zh">开发工具</b>
+        </li>
+        <li>
+          <span data-only="en">Platform</span><span data-only="zh">平台</span>
+          <b>Windows · Node ≥ 20</b>
+        </li>
+        <li>
+          <span data-only="en">Currently</span><span data-only="zh">当前</span>
+          <b>DeepSeek Harness</b>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="hero-display">
+    <h1 class="display">
+      <span class="hollow">Ink</span>
+      <span class="solid">ward</span>
+      <span class="zh">守 墨</span>
+    </h1>
+  </div>
+</section>
+
+<!-- -------------------------------------------------------------- project -->
+<section id="work">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title"><span data-only="en">Featured work</span><span data-only="zh">代表作品</span></h2>
+      <span class="sec-note">2026</span>
+    </div>
+
+    <div class="project">
+      <div class="reveal">
+        <h3>dsh-notify-cues</h3>
+        <p data-only="en">
+          Windows notifications for DeepSeek Harness that tell you <strong>why</strong> a turn
+          ended — finished, interrupted, failed, out of budget — each with its own chime,
+          instead of reporting every stop as “task complete”.
+        </p>
+        <p data-only="zh">
+          给 DeepSeek Harness 的 Windows 通知：告诉你这一轮<strong>为什么</strong>结束 ——
+          完成、被中断、出错、额度耗尽，各有各的提示音，而不是把每次停止都报成「任务完成」。
+        </p>
+        <div class="tags">
+          <span class="tag">deepseek-harness</span>
+          <span class="tag">dsh-plugins</span>
+          <span class="tag">notifications</span>
+          <span class="tag">windows</span>
+          <span class="tag">mit</span>
+        </div>
+      </div>
+
+      <ul class="facts reveal" style="--d:80ms">
+        <li><span data-only="en">Stars</span><span data-only="zh">Stars</span><b class="acid">2</b></li>
+        <li><span data-only="en">Commits</span><span data-only="zh">提交</span><b>4</b></li>
+        <li><span data-only="en">Shipped in</span><span data-only="zh">用时</span><b>2 days</b></li>
+        <li><span data-only="en">Licence</span><span data-only="zh">许可</span><b>MIT</b></li>
+        <li><span data-only="en">Audio assets</span><span data-only="zh">音频文件</span><b>0</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- --------------------------------------------------------------- matrix -->
+<section id="detail">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title"><span data-only="en">Why the turn ended</span><span data-only="zh">七种结束的理由</span></h2>
+      <span class="sec-note">node scripts/sync.mjs</span>
+    </div>
+
+    <p class="lede reveal" style="max-width:70ch;margin-bottom:clamp(28px,5vh,56px)">
+      <span data-only="en">Every notifier decides “done” from <code>agent/status → idle</code>, which is
+      true both when a turn finishes and when you press stop. The reason was always in the
+      session log — DSH writes it there itself.</span>
+      <span data-only="zh">每个通知插件都靠 <code>agent/status → idle</code> 判断「完成了」，
+      可这个信号在正常结束和你按下停止时完全相同。原因其实一直都在会话日志里 —— DSH 自己写的。</span>
+    </p>
+
+    <div class="matrix" id="matrix">
+      <!-- Rows are generated by site.js from the same tone table the plugin uses,
+           so the contour bars are measured, not drawn by hand. -->
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------- activity -->
+<section id="activity">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title"><span data-only="en">Signals</span><span data-only="zh">现状</span></h2>
+      <span class="sec-note" id="generated-note">live</span>
+    </div>
+
+    <dl class="acct reveal">
+      <div><dt data-only="en">Public repos</dt><dt data-only="zh">公开仓库</dt><dd data-stat="repos">—</dd></div>
+      <div><dt data-only="en">Stars</dt><dt data-only="zh">Stars</dt><dd data-stat="stars">—</dd></div>
+      <div><dt data-only="en">Contributions</dt><dt data-only="zh">贡献</dt><dd data-stat="contribs">—</dd></div>
+      <div><dt data-only="en">Languages</dt><dt data-only="zh">语言</dt><dd data-stat="langs">—</dd></div>
+    </dl>
+  </div>
+</section>
+
+</main>
+
+<!-- --------------------------------------------------------------- footer -->
+<footer>
+  <div class="foot">
+    <div>
+      <p class="colophon">
+        <span data-only="en">Built by hand — Canvas, no framework</span>
+        <span data-only="zh">手写实现 —— Canvas，无框架</span>
+      </p>
+      <p class="colophon" style="margin-top:8px">© 尘归守墨 · INKWARD</p>
+    </div>
+    <nav class="foot-links">
+      <a href="https://github.com/3332210/dsh-notify-cues">dsh-notify-cues</a>
+      <a href="https://github.com/3332210">GitHub</a>
+      <a href="https://github.com/3332210/dsh-notify-cues/blob/main/README.md" data-only="en">Docs</a>
+      <a href="https://github.com/3332210/dsh-notify-cues/blob/main/README.md" data-only="zh">文档</a>
+      <a href="https://github.com/3332210/dsh-notify-cues/issues" data-only="en">Issues</a>
+      <a href="https://github.com/3332210/dsh-notify-cues/issues" data-only="zh">反馈</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="module" src="site.js"></script>
+</body>
+</html>
