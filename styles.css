@@ -416,12 +416,45 @@ html.js .reveal.in { opacity: 1; transform: none; }
   .hero-display { padding-left: var(--gutter); }
   .project { grid-template-columns: 1fr; }
 }
+
+/* Narrow phones. Two real failures showed up at 375 px: the wordmark ran off
+   the right edge because 15.5vw of "WARD" is wider than the viewport, and the
+   metadata rows were clipped because a long right-hand value could not wrap. */
+@media (max-width: 620px) {
+  .hero { min-height: auto; padding-bottom: 28px; }
+  .hero-rail { padding-top: 84px; }
+  .lede { font-size: 16px; }
+  .display { font-size: clamp(46px, 19vw, 130px); line-height: 0.84; }
+  .display .zh { font-size: 0.5em; }
+
+  /* The label column is fixed; the value takes the rest and may wrap. */
+  .rail-list li {
+    display: grid;
+    grid-template-columns: minmax(72px, 34%) 1fr;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .rail-list li b { overflow-wrap: anywhere; }
+
+  /* Only the switches stay in the nav — the location is decoration at this size,
+     and dropping it is what stops the row from running off the screen. */
+  .nav { padding: 14px var(--gutter); gap: 12px; }
+  .nav-meta > span { display: none; }
+  .nav-meta { gap: 10px; }
+
+  .sec-head { flex-wrap: wrap; gap: 10px; }
+  .facts li { grid-template-columns: 1fr auto; }
+  .acct { grid-template-columns: repeat(2, 1fr); }
+  .foot { flex-direction: column; align-items: flex-start; }
+}
+
 @media (max-width: 760px) {
   .row { grid-template-columns: 1fr auto; row-gap: 8px; }
   .row .contour { grid-column: 1 / -1; }
   .row .signal { text-align: left; grid-column: 1 / -1; }
   .sec-note { display: none; }
 }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
   html.js .reveal { opacity: 1; transform: none; }
