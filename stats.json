@@ -1,5 +1,26 @@
 {
   "generatedAt": "2026-10-03T16:05:09.405Z",
+  "user": "3332210",
+  "repos": [
+    {
+      "name": "dsh-notify-cues",
+      "description": "Per-reason Windows notifications for DeepSeek Harness — distinct chimes for completed / interrupted / error",
+      "url": "https://github.com/3332210/dsh-notify-cues",
+      "language": "JavaScript",
+      "stars": 2,
+      "forks": 0,
+      "topics": [
+        "deepseek-harness",
+        "deepseek-harness-plugins",
+        "dsh-plugins",
+        "notifications",
+        "windows"
+      ],
+      "licence": "MIT",
+      "pushedAt": "2026-10-02T04:39:21Z",
+      "createdAt": "2026-10-01T18:02:51Z"
+    }
+  ],
   "totals": {
     "publicRepos": 2,
     "stars": 2,
@@ -25,6 +46,7 @@
   },
   "featured": {
     "name": "dsh-notify-cues",
+    "url": "https://github.com/3332210/dsh-notify-cues",
     "stars": 2,
     "commitCount": 4,
     "buildSpanDays": 2

@@ -145,7 +145,10 @@ async function main() {
   }
 
   /* ---- 2. plan ---------------------------------------------------------- */
-  const files = walk(SRC).filter((f) => f.rel !== 'review.html');
+  /* Dev-only pages stay out of the published site: they exist to audit or
+     photograph the page, and shipping them would expose the harness. */
+  const DEV_ONLY = ['review.html', 'audit.html', 'diag.html', 'tune.html'];
+  const files = walk(SRC).filter((f) => !DEV_ONLY.includes(f.rel));
   const plan = files.map((f) => {
     const content = readFileSync(f.full);
     const sha = sha1(Buffer.concat([Buffer.from(`blob ${content.length}\0`, 'utf8'), content]));

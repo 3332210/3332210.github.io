@@ -66,11 +66,33 @@ for (const name of ['robots.txt', 'sitemap.xml']) {
 console.log(`  static files             ${staticCount} (robots.txt, sitemap.xml)`);
 
 // 3. Stats payload. Small, fixed shape, written next to the page.
+//
+// repos[] is what makes the work list grow on its own: the page renders one row
+// per entry, so a new repository appears with no code change. Keep the fields
+// the rows actually draw, and nothing else.
 const statsSrc = join(KIT, 'data', 'stats.json');
 if (existsSync(statsSrc)) {
   const s = JSON.parse(readFileSync(statsSrc, 'utf8'));
+  const repos = (s.repos ?? [])
+    .filter((r) => !r.archived && r.name !== `${s.meta?.user ?? ''}`)
+    .map((r) => ({
+      name: r.name,
+      description: r.description ?? '',
+      url: r.htmlUrl,
+      language: r.language ?? null,
+      stars: r.stars ?? 0,
+      forks: r.forks ?? 0,
+      topics: (r.topics ?? []).slice(0, 5),
+      licence: r.license ?? null,
+      pushedAt: r.pushedAt ?? null,
+      createdAt: r.createdAt ?? null,
+    }))
+    .sort((a, b) => (b.stars - a.stars) || String(b.pushedAt ?? '').localeCompare(String(a.pushedAt ?? '')));
+
   const payload = {
     generatedAt: s.generatedAt,
+    user: s.meta?.user ?? '3332210',
+    repos,
     totals: {
       publicRepos: s.totals?.publicRepos ?? 0,
       stars: s.totals?.stars ?? 0,
@@ -82,11 +104,17 @@ if (existsSync(statsSrc)) {
       summary: s.activity?.summary ?? { contributions: 0, activeDays: 0, longestStreak: 0 },
     },
     featured: s.featured
-      ? { name: s.featured.name, stars: s.featured.stars, commitCount: s.featured.commitCount, buildSpanDays: s.featured.buildSpanDays }
+      ? {
+        name: s.featured.name,
+        url: s.featured.htmlUrl,
+        stars: s.featured.stars,
+        commitCount: s.featured.commitCount,
+        buildSpanDays: s.featured.buildSpanDays,
+      }
       : null,
   };
   writeFileSync(join(OUT, 'stats.json'), JSON.stringify(payload, null, 2) + '\n');
-  console.log(`  stats.json               from ${statsSrc.replace(SITE + '\\', '')}`);
+  console.log(`  stats.json               ${repos.length} repo(s) for the work list`);
 } else {
   console.log('  stats.json               SKIPPED (run profile-kit/scripts/sync.mjs first)');
 }

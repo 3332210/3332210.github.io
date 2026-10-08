@@ -1,0 +1,89 @@
+<!doctype html>
+<!-- Dev tool. Not deployed: scripts/deploy.mjs skips files named *.audit.html
+     and the build renames this one. It carries data-lang on purpose — without
+     it the embedded page's `[data-only]` rules never match and both languages
+     render at once, which reads as a site bug when it is this harness's. -->
+<html lang="en" data-theme="dark" data-lang="en">
+<head>
+<meta charset="utf-8">
+<title>interaction audit</title>
+<style>
+  body { margin: 0; background: #111; color: #F5F5F0; font: 12px ui-monospace, monospace; }
+  iframe { width: 1500px; height: 700px; border: 0; display: block; }
+  #out { padding: 12px; font-size: 13px; line-height: 1.75; white-space: pre; }
+  b { color: #C8FF4D; }
+  .bad { color: #ff6b6b; }
+</style>
+</head>
+<body>
+<iframe id="f" src="./"></iframe>
+<div id="out">running…</div>
+<script>
+/* Audits what the user actually complained about: is anything clickable, does it
+   go somewhere, and can a keyboard reach it?
+   Waits for the embedded page's own boot to finish rather than guessing a
+   timeout — a fixed delay under CDP virtual time is unreliable. */
+const L = [];
+const log = (k, v) => L.push(String(k).padEnd(30) + ' ' + v);
+
+function run() {
+  const doc = f.contentDocument;
+  if (!doc) { setTimeout(run, 200); return; }
+  // Wait until site.js has actually run and injected the work rows.
+  if (!doc.getElementById('work-list')) { setTimeout(run, 200); return; }
+  const rowsReady = doc.querySelector('.work-row') || doc.querySelector('.work-empty');
+  if (!rowsReady) { setTimeout(run, 200); return; }
+
+  const win = f.contentWindow;
+  const links = [...doc.querySelectorAll('a[href]')];
+  const real = links.filter((a) => a.getAttribute('href') && a.getAttribute('href') !== '#' && !a.getAttribute('href').startsWith('#'));
+
+  log('total <a href>', links.length);
+  log('external destinations', real.length);
+
+  const dest = {};
+  for (const a of real) {
+    const h = a.getAttribute('href');
+    dest[h] = (dest[h] || 0) + 1;
+  }
+  log('unique targets', Object.keys(dest).length);
+
+  const sectionLinks = [...doc.querySelectorAll('.nav-links a[href^="#"]')];
+  log('section links', sectionLinks.length);
+  sectionLinks.forEach((a) => {
+    const el = doc.querySelector(a.getAttribute('href'));
+    log('   ' + a.textContent.trim(), (el ? 'resolves ' : 'BROKEN ') + a.getAttribute('href'));
+  });
+
+  const rows = [...doc.querySelectorAll('.work-row')];
+  log('work rows', rows.length);
+  rows.forEach((r) => {
+    const name = r.querySelector('.work-name');
+    log('   ' + (name ? name.textContent : '?'), (r.getAttribute('href') || 'NO HREF').slice(0, 52));
+  });
+
+  const tags = [...doc.querySelectorAll('#topic-links a')];
+  log('topic links', tags.length);
+  tags.slice(0, 2).forEach((t) => log('   ' + t.textContent, t.getAttribute('href')));
+
+  log('focusable elements', doc.querySelectorAll('a[href], button, [tabindex]:not([tabindex="-1"])').length);
+
+  const fake = [...doc.querySelectorAll('*')].filter((el) => {
+    const cs = win.getComputedStyle(el);
+    return cs.cursor === 'pointer' && !el.closest('a') && el.tagName !== 'BUTTON' && !el.classList.contains('row');
+  }).map((el) => el.className || el.tagName);
+  log('pointer-cursor non-links', fake.length ? fake.slice(0, 4).join(', ') : 'none');
+
+  const unsafe = real.filter((a) => a.target === '_blank' && !/noopener/.test(a.rel || ''));
+  log('_blank w/o noopener', unsafe.length);
+
+  document.getElementById('out').innerHTML = L.join('\n').replace(/^([^\s].*?)(?=\s{2,})/gm, '<b>$1</b>');
+  window.__auditDone = true;
+}
+
+const f = document.getElementById('f');
+f.addEventListener('load', () => setTimeout(run, 300));
+setTimeout(run, 800);
+</script>
+</body>
+</html>

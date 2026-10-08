@@ -86,16 +86,148 @@ function buildMatrix() {
   host.appendChild(frag);
 }
 
+/**
+ * Turn the topic list into real links to GitHub's topic pages.
+ *
+ * Each tag is a destination rather than a label — the page had almost nothing
+ * clickable, and a tag that looks interactive but is not is worse than no tag.
+ */
+function renderTags(stats) {
+  const host = document.getElementById('topic-links');
+  if (!host) return;
+  const seen = new Set();
+  const topics = [];
+  for (const r of stats.repos ?? []) {
+    for (const t of r.topics ?? []) {
+      if (!seen.has(t)) { seen.add(t); topics.push(t); }
+    }
+  }
+  if (!topics.length) return;
+  host.innerHTML = topics
+    .slice(0, 8)
+    .map((t) => `<a class="tag" href="https://github.com/topics/${encodeURIComponent(t)}" target="_blank" rel="noopener">${esc(t)}</a>`)
+    .join('');
+}
+
 /* ============================================================== live data ==
  * The numbers come from the repo's own generated stats.json, refreshed by CI.
  * If the fetch fails the dashes stay — an honest "no data" beats a stale number.
  * ======================================================================== */
+let STATS = null;
+
+async function loadStats() {
+  if (STATS) return STATS;
+  const res = await fetch('stats.json', { cache: 'no-cache' });
+  if (!res.ok) throw new Error(String(res.status));
+  STATS = await res.json();
+  return STATS;
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+/** "2026-10-01T…" -> "Oct 2026". Locale-independent on purpose: the page's own
+ *  language switch already carries the locale, and a runtime locale here would
+ *  make the layout width jump between visits. */
+function monthYear(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${m[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/**
+ * The work list: one row per repository, every row a real link.
+ *
+ * Generated from data so that ADDING A REPOSITORY MAKES IT APPEAR with no code
+ * change. Nothing here is specific to a particular project — that is the whole
+ * point, because this list has to keep working as the account grows.
+ */
+function renderWork(stats) {
+  const host = document.getElementById('work-list');
+  if (!host) return;
+
+  const repos = stats.repos ?? [];
+  const count = document.getElementById('work-count');
+  if (count) {
+    count.textContent = repos.length
+      ? `${String(repos.length).padStart(2, '0')} ${repos.length === 1 ? 'repository' : 'repositories'}`
+      : 'none public yet';
+  }
+
+  if (!repos.length) {
+    host.innerHTML = '<p class="work-empty">Nothing public yet.</p>';
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+
+  repos.forEach((r, i) => {
+    // The whole row is the anchor, so the click target is the row and not just
+    // the title — a title-only link in a wide row is a poor target.
+    const a = document.createElement('a');
+    a.className = 'work-row reveal';
+    a.href = r.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.setProperty('--d', `${i * 60}ms`);
+
+    const idx = document.createElement('span');
+    idx.className = 'work-idx';
+    idx.textContent = String(i + 1).padStart(2, '0');
+
+    const main = document.createElement('span');
+    main.className = 'work-main';
+    const name = document.createElement('span');
+    name.className = 'work-name';
+    name.textContent = r.name;
+    main.appendChild(name);
+    // A repo with no description must not leave an empty gap in the row.
+    if (r.description) {
+      const desc = document.createElement('span');
+      desc.className = 'work-desc';
+      desc.textContent = r.description;
+      main.appendChild(desc);
+    }
+
+    const meta = document.createElement('span');
+    meta.className = 'work-meta';
+    const bits = [];
+    if (r.language) bits.push(`<b>${esc(r.language)}</b>`);
+    if (r.stars) bits.push(`<span class="work-star">★ ${r.stars}</span>`);
+    if (r.licence) bits.push(esc(r.licence));
+    const when = monthYear(r.pushedAt);
+    if (when) bits.push(when);
+    meta.innerHTML = bits.join('<span class="work-sep">·</span>');
+
+    const arrow = document.createElement('span');
+    arrow.className = 'work-arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '↗';
+
+    a.append(idx, main, meta, arrow);
+    frag.appendChild(a);
+  });
+
+  host.replaceChildren(frag);
+
+  // The rows are created after the first observer pass, so reveal them here.
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+    host.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  } else {
+    host.querySelectorAll('.reveal').forEach((el) => el.classList.add('in'));
+  }
+}
+
 async function hydrateStats() {
   const note = document.getElementById('generated-note');
   try {
-    const res = await fetch('stats.json', { cache: 'no-cache' });
-    if (!res.ok) throw new Error(String(res.status));
-    const s = await res.json();
+    const s = await loadStats();
     const set = (k, v) => {
       const el = document.querySelector(`[data-stat="${k}"]`);
       if (el) el.textContent = v;
@@ -105,8 +237,15 @@ async function hydrateStats() {
     set('contribs', s.activity?.yearTotal ?? s.activity?.summary?.contributions ?? '—');
     set('langs', (s.languages ?? []).length || '—');
     if (note && s.generatedAt) note.textContent = `live · ${s.generatedAt.slice(0, 10)}`;
+    renderWork(s);
+    renderTags(s);
   } catch {
     if (note) note.textContent = 'offline';
+    const host = document.getElementById('work-list');
+    if (host) {
+      host.innerHTML = '<p class="work-empty">The list could not load. Every repository is at '
+        + '<a href="https://github.com/3332210">github.com/3332210</a>.</p>';
+    }
   }
 }
 
@@ -149,8 +288,7 @@ function initCursor() {
  * One observer, staggered by a per-element CSS variable. Elements start visible
  * and are hidden by a class, so with JS off nothing disappears.
  * ======================================================================== */
-function initReveal() {
-  const items = document.querySelectorAll('.reveal');
+function initReveal() {  const items = document.querySelectorAll('.reveal');
   if (!('IntersectionObserver' in window)) {
     items.forEach((el) => el.classList.add('in'));
     return;
@@ -214,10 +352,47 @@ function initSwitches() {
   sync();
 }
 
+/* ============================================================ navigation ==
+ * Section links are plain anchors, so they work without any of this. All this
+ * adds is which one is marked current, and it does so from scroll position
+ * rather than only from clicks, so the marker is honest when the reader scrolls
+ * by hand or lands on a deep link.
+ * ======================================================================== */
+function initNav() {
+  const links = [...document.querySelectorAll('.nav-links a[href^="#"]')];
+  if (!links.length) return;
+
+  const sections = links
+    .map((a) => ({ a, el: document.querySelector(a.getAttribute('href')) }))
+    .filter((s) => s.el);
+
+  const mark = () => {
+    // The section whose top is closest to the reading line, without going past it.
+    const line = window.innerHeight * 0.35;
+    let current = null;
+    for (const s of sections) {
+      const top = s.el.getBoundingClientRect().top;
+      if (top <= line) current = s.a;
+      else break;
+    }
+    for (const s of sections) s.a.classList.toggle('is-current', s.a === current);
+  };
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { mark(); ticking = false; });
+  }, { passive: true });
+  window.addEventListener('resize', mark);
+  mark();
+}
+
 /* =================================================================== boot == */
 function boot() {
   buildMatrix();
   initSwitches();
+  initNav();
   initCursor();
   initReveal();
   hydrateStats();

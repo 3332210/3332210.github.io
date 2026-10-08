@@ -53,6 +53,16 @@
 <header class="nav">
   <a class="wordmark" href="#top">INKWARD<span>.</span></a>
 
+  <!-- Section links. These are the page's only real navigation, so they are
+       always visible and always keyboard reachable. The active one is marked by
+       scripts as the reader scrolls. -->
+  <nav class="nav-links" aria-label="Sections">
+    <a href="#work"><span data-only="en">Work</span><span data-only="zh">作品</span></a>
+    <a href="#detail"><span data-only="en">Detail</span><span data-only="zh">细节</span></a>
+    <a href="#activity"><span data-only="en">Signals</span><span data-only="zh">现状</span></a>
+    <a class="nav-gh" href="https://github.com/3332210" target="_blank" rel="noopener">GitHub&nbsp;↗</a>
+  </nav>
+
   <div class="nav-meta">
     <span data-only="en">Shanghai · UTC+8</span>
     <span data-only="zh">上海 · UTC+8</span>
@@ -119,39 +129,22 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="sec-num">01</span>
-      <h2 class="sec-title"><span data-only="en">Featured work</span><span data-only="zh">代表作品</span></h2>
-      <span class="sec-note">2026</span>
+      <h2 class="sec-title"><span data-only="en">Work</span><span data-only="zh">作品</span></h2>
+      <span class="sec-note" id="work-count">—</span>
     </div>
 
-    <div class="project">
-      <div class="reveal">
-        <h3>dsh-notify-cues</h3>
-        <p data-only="en">
-          Windows notifications for DeepSeek Harness that tell you <strong>why</strong> a turn
-          ended — finished, interrupted, failed, out of budget — each with its own chime,
-          instead of reporting every stop as “task complete”.
-        </p>
-        <p data-only="zh">
-          给 DeepSeek Harness 的 Windows 通知：告诉你这一轮<strong>为什么</strong>结束 ——
-          完成、被中断、出错、额度耗尽，各有各的提示音，而不是把每次停止都报成「任务完成」。
-        </p>
-        <div class="tags">
-          <span class="tag">deepseek-harness</span>
-          <span class="tag">dsh-plugins</span>
-          <span class="tag">notifications</span>
-          <span class="tag">windows</span>
-          <span class="tag">mit</span>
-        </div>
-      </div>
-
-      <ul class="facts reveal" style="--d:80ms">
-        <li><span data-only="en">Stars</span><span data-only="zh">Stars</span><b class="acid">2</b></li>
-        <li><span data-only="en">Commits</span><span data-only="zh">提交</span><b>4</b></li>
-        <li><span data-only="en">Shipped in</span><span data-only="zh">用时</span><b>2 days</b></li>
-        <li><span data-only="en">Licence</span><span data-only="zh">许可</span><b>MIT</b></li>
-        <li><span data-only="en">Audio assets</span><span data-only="zh">音频文件</span><b>0</b></li>
-      </ul>
+    <!-- Rendered by site.js from stats.json. Every row is a real link to the
+         repository. Adding a repo to the sync makes it appear here with no code
+         change, which is the point: this list has to keep working as it grows. -->
+    <div class="work-list" id="work-list">
+      <noscript>
+        <p class="work-empty">The work list needs JavaScript. Every repository is at
+        <a href="https://github.com/3332210">github.com/3332210</a>.</p>
+      </noscript>
     </div>
+
+    <!-- Topics, derived from the same data, each linking to its GitHub topic page. -->
+    <div class="tags" id="topic-links" style="margin-top:26px"></div>
   </div>
 </section>
 
@@ -210,12 +203,14 @@
       <p class="colophon" style="margin-top:8px">© 尘归守墨 · INKWARD</p>
     </div>
     <nav class="foot-links">
-      <a href="https://github.com/3332210/dsh-notify-cues">dsh-notify-cues</a>
-      <a href="https://github.com/3332210">GitHub</a>
-      <a href="https://github.com/3332210/dsh-notify-cues/blob/main/README.md" data-only="en">Docs</a>
-      <a href="https://github.com/3332210/dsh-notify-cues/blob/main/README.md" data-only="zh">文档</a>
-      <a href="https://github.com/3332210/dsh-notify-cues/issues" data-only="en">Issues</a>
-      <a href="https://github.com/3332210/dsh-notify-cues/issues" data-only="zh">反馈</a>
+      <a href="https://github.com/3332210/dsh-notify-cues" target="_blank" rel="noopener">dsh-notify-cues</a>
+      <a href="https://github.com/3332210" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/3332210/dsh-notify-cues/blob/main/README.md" target="_blank" rel="noopener" data-only="en">Docs</a>
+      <a href="https://github.com/3332210/dsh-notify-cues/blob/main/README.md" target="_blank" rel="noopener" data-only="zh">文档</a>
+      <a href="https://github.com/3332210/dsh-notify-cues/issues" target="_blank" rel="noopener" data-only="en">Issues</a>
+      <a href="https://github.com/3332210/dsh-notify-cues/issues" target="_blank" rel="noopener" data-only="zh">反馈</a>
+      <a href="https://3332210.github.io/" data-only="en">Site</a>
+      <a href="https://3332210.github.io/zh.html" data-only="zh">主页</a>
     </nav>
   </div>
 </footer>
