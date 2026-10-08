@@ -1,0 +1,428 @@
+/* ===========================================================================
+   INKWARD — stylesheet
+   Governed by DESIGN.md. The three rules that matter:
+     1. real scale contrast (18vw display vs 10px mono), nothing in between
+     2. the field is the only ornament; no gradient strips, glows or stray rules
+     3. the acid accent stays under 0.5% of visible area
+   ========================================================================= */
+
+/* ---------------------------------------------------------------- fonts -- */
+/* Self-hosted variable fonts. One file per family covers the whole weight axis.
+   Paths are relative, not root-absolute: the site is served from /inkward/ on
+   GitHub Pages until a custom domain exists, and /fonts/… would 404 there. */
+@font-face {
+  font-family: 'Archivo';
+  src: url('fonts/archivo-var.woff2') format('woff2-variations'),
+       url('fonts/archivo-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/inter-var.woff2') format('woff2-variations'),
+       url('fonts/inter-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('fonts/jetbrainsmono-var.woff2') format('woff2-variations'),
+       url('fonts/jetbrainsmono-var.woff2') format('woff2');
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------- tokens -- */
+:root {
+  --display: 'Archivo', 'Arial Black', system-ui, sans-serif;
+  --sans: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  /* No webfont for CJK: a full Simplified set is 3–8 MB, which is the wrong
+     trade for a one-page site. The system stack is excellent on all three
+     platforms, and the display/body size contrast carries the language. */
+  --cjk: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC',
+         'Source Han Sans SC', system-ui, sans-serif;
+
+  --ease: cubic-bezier(.16, .7, 0, 1);
+  --slow: 900ms;
+  --base: 600ms;
+  --fast: 280ms;
+
+  --gutter: clamp(20px, 3.2vw, 56px);
+  --maxw: 1600px;
+  --rail: 38%;
+}
+
+/* Dark is the default (per the brief). Light is an explicit opt-in. */
+:root, :root[data-theme='dark'] {
+  --paper: #0E0E10;
+  --paper-2: #131316;
+  --ink: #F5F5F0;
+  --ink-2: #8A8A93;
+  --ink-3: #55555E;
+  --rule: #232327;
+  --acid: #C8FF4D;
+  --field-accent: #C8FF4D;
+  --field-ink: #F5F5F0;
+  color-scheme: dark;
+}
+:root[data-theme='light'] {
+  --paper: #F2EFE9;
+  --paper-2: #E9E5DD;
+  --ink: #0B0B0D;
+  --ink-2: #5C5C63;
+  --ink-3: #8E8E93;
+  --rule: #DEDAD1;
+  --acid: #5C7A00;          /* darkened so it still reads on paper */
+  --field-accent: #7A9E12;
+  --field-ink: #2A2A2E;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  transition: background var(--base) var(--ease), color var(--base) var(--ease);
+}
+html[data-lang='zh'] body { font-family: var(--cjk); }
+
+::selection { background: var(--acid); color: var(--paper); }
+
+/* --------------------------------------------------------------- cursor -- */
+/* The single piece of showmanship on the page. A hard acid square tracks the
+   pointer exactly; a thin ring lags behind it. Hidden on touch devices and for
+   readers who asked for less motion. */
+.cursor, .cursor-ring {
+  position: fixed; top: 0; left: 0; z-index: 9999;
+  pointer-events: none; will-change: transform;
+}
+.cursor {
+  width: 7px; height: 7px; background: var(--acid);
+  transform: translate3d(-50%, -50%, 0);
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  width: 34px; height: 34px;
+  border: 1px solid color-mix(in srgb, var(--ink) 45%, transparent);
+  border-radius: 50%;
+  transform: translate3d(-50%, -50%, 0) scale(1);
+  transition: width var(--fast) var(--ease), height var(--fast) var(--ease),
+              border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+body[data-cursor='link'] .cursor-ring {
+  width: 58px; height: 58px;
+  border-color: var(--acid);
+  background: color-mix(in srgb, var(--acid) 12%, transparent);
+}
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .cursor, .cursor-ring { display: none; }
+}
+
+/* ------------------------------------------------------------------ nav -- */
+.nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  padding: 18px var(--gutter);
+  mix-blend-mode: difference;   /* keeps it legible over both the field and paper */
+  color: #F5F5F0;
+}
+:root[data-theme='light'] .nav { mix-blend-mode: normal; color: var(--ink); }
+
+.wordmark {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none; color: inherit;
+}
+.wordmark span { color: var(--acid); }
+
+.nav-meta {
+  display: flex; align-items: center; gap: 18px;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+
+/* The theme/language switches are metadata, so they are 10px mono text buttons.
+   Deliberately not a toggle switch or an icon set — those read as a product. */
+.switch { display: flex; gap: 2px; }
+.switch button {
+  appearance: none; background: none; border: 0; cursor: pointer;
+  font: inherit; color: inherit; opacity: 0.42;
+  padding: 4px 6px; letter-spacing: 0.14em;
+  transition: opacity var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.switch button:hover { opacity: 0.8; }
+.switch button[aria-pressed='true'] { opacity: 1; color: var(--acid); }
+
+/* ---------------------------------------------------------------- field -- */
+.field-wrap {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+#field { width: 100%; height: 100%; display: block; }
+
+/* ------------------------------------------------------------------ hero -- */
+.hero {
+  position: relative; z-index: 2;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: var(--rail) 1fr;
+  align-items: end;
+  padding: 0 0 clamp(28px, 5vh, 64px);
+}
+
+/* The rail is a solid block of paper, so the field never sits behind the
+   positioning line. Hard edge, no gradient — a soft edge would look like a bug. */
+.hero-rail {
+  background: var(--paper);
+  padding: clamp(96px, 14vh, 160px) 0 clamp(0px, 2vh, 20px) var(--gutter);
+  align-self: stretch;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding-bottom: clamp(28px, 5vh, 64px);
+}
+.hero-rail-inner { max-width: 44ch; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin: 0 0 22px;
+}
+.eyebrow b { color: var(--acid); font-weight: 500; }
+
+.lede {
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.5; margin: 0 0 26px; color: var(--ink);
+  text-wrap: balance;
+}
+.lede-en { color: var(--ink-2); font-size: 0.82em; }
+
+.rail-list {
+  margin: 0; padding: 0; list-style: none;
+  border-top: 1px solid var(--rule);
+}
+.rail-list li {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 9px 0; border-bottom: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
+}
+.rail-list li b { color: var(--ink-2); font-weight: 500; }
+
+/* ---- the display type: the whole point of the page ---- */
+.hero-display {
+  align-self: end;
+  padding-left: clamp(16px, 3vw, 48px);
+  padding-right: var(--gutter);
+  overflow: hidden;             /* crop, do not clip-path */
+}
+.display {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(64px, 15.5vw, 260px);
+  line-height: 0.82;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  font-stretch: 92%;
+}
+/* Alternating solid / hollow: hollow = not yet written, solid = inked.
+   The stroke is ~2.5% of the em and always counterpoints the fill colour. */
+.display .hollow {
+  color: transparent;
+  -webkit-text-stroke: 0.022em var(--ink);
+  text-stroke: 0.022em var(--ink);
+  display: block;
+}
+.display .solid { display: block; color: var(--ink); }
+.display .zh {
+  display: block;
+  font-family: var(--cjk);
+  font-size: 0.62em;
+  letter-spacing: 0.02em;
+  font-weight: 800;
+  margin-top: 0.06em;
+}
+
+/* Language swap: both strings live in the DOM, CSS picks one. No re-render,
+   no flash, and it works with JS disabled. */
+html[data-lang='en'] [data-only='zh'] { display: none; }
+html[data-lang='zh'] [data-only='en'] { display: none; }
+
+/* -------------------------------------------------------------- sections -- */
+section { position: relative; z-index: 2; }
+.wrap {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: clamp(72px, 12vh, 180px) var(--gutter);
+}
+.sec-head {
+  display: flex; align-items: baseline; gap: 20px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 14px; margin-bottom: clamp(32px, 6vh, 72px);
+}
+.sec-num {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+  color: var(--acid); flex: 0 0 auto;
+}
+.sec-title {
+  margin: 0; font-family: var(--display); font-weight: 800;
+  font-size: clamp(13px, 1.05vw, 15px);
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+.sec-note {
+  margin-left: auto; font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
+}
+
+/* --------------------------------------------------------------- project -- */
+.project {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 72px);
+  align-items: start;
+}
+.project h3 {
+  margin: 0 0 16px;
+  font-family: var(--mono); font-weight: 700;
+  font-size: clamp(20px, 2.2vw, 34px);
+  letter-spacing: -0.02em;
+}
+.project p { max-width: 58ch; color: var(--ink-2); margin: 0 0 20px; }
+.project p strong { color: var(--ink); font-weight: 500; }
+
+.facts { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+.facts li {
+  display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: baseline;
+  padding: 12px 0; border-bottom: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+}
+.facts li span { color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; }
+.facts li b { font-weight: 500; color: var(--ink); }
+.facts li b.acid { color: var(--acid); }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 22px; }
+.tag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+  padding: 5px 9px; border: 1px solid var(--rule); color: var(--ink-2);
+  transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.tag:hover { border-color: var(--acid); color: var(--ink); }
+
+/* ---------------------------------------------------------------- matrix -- */
+.matrix { border-top: 1px solid var(--rule); }
+.row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.1fr) minmax(120px, 1fr) minmax(0, 2fr) minmax(90px, 0.9fr);
+  gap: clamp(12px, 2vw, 32px);
+  align-items: center;
+  padding: 15px 12px 15px 0;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+  transition: background var(--base) var(--ease), padding-left var(--base) var(--ease);
+}
+.row::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--acid); transform: scaleY(0); transform-origin: top;
+  transition: transform var(--base) var(--ease);
+}
+.row:hover { background: var(--paper-2); padding-left: 14px; }
+.row:hover::before { transform: scaleY(1); }
+
+.row code {
+  font-family: var(--mono); font-size: 13px; color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.row code i { color: var(--ink-3); font-style: normal; }
+.row .outcome { font-family: var(--cjk); font-size: 14px; color: var(--ink-2); }
+.row .signal { font-family: var(--mono); font-size: 11px; color: var(--ink-3); text-align: right; }
+
+/* The silent rows are the clever part, so they are marked out rather than
+   given equal weight. Dimmed, dashed, no accent — the absence is the point. */
+.row.silent code, .row.silent .outcome, .row.silent .signal { color: var(--ink-3); opacity: 0.66; }
+.row.silent .contour { opacity: 0.3; }
+
+/* Piano-roll contour: bar x/duration from the real tone table. */
+.contour { display: flex; align-items: center; height: 22px; position: relative; }
+.contour i {
+  position: absolute; height: 3px; background: var(--ink-2); border-radius: 2px;
+  transform-origin: left center;
+}
+.row:hover .contour i { background: var(--acid); }
+.row.silent .contour i { background: var(--ink-3); height: 1px; }
+
+/* -------------------------------------------------------------- activity -- */
+.acct {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+}
+.acct div { background: var(--paper); padding: 20px 18px; }
+.acct dt {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px;
+}
+.acct dd {
+  margin: 0; font-family: var(--display); font-weight: 800;
+  font-size: clamp(28px, 3.4vw, 52px); line-height: 0.95; letter-spacing: -0.03em;
+}
+
+/* ---------------------------------------------------------------- footer -- */
+footer { position: relative; z-index: 2; border-top: 1px solid var(--rule); }
+.foot {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: clamp(40px, 7vh, 88px) var(--gutter);
+  display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end;
+  justify-content: space-between;
+}
+.foot-links { display: flex; flex-wrap: wrap; gap: 22px; }
+.foot a {
+  color: var(--ink-2); text-decoration: none;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+  border-bottom: 1px solid transparent;
+  transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+.foot a:hover { color: var(--ink); border-bottom-color: var(--acid); }
+.colophon {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0;
+}
+
+/* --------------------------------------------------------------- reveal -- */
+/* Entrance is opt-in via a class the observer adds, so with JS disabled the
+   content is simply present rather than invisible. */
+.reveal { opacity: 1; }
+html.js .reveal {
+  opacity: 0; transform: translateY(22px);
+  transition: opacity var(--slow) var(--ease), transform var(--slow) var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+html.js .reveal.in { opacity: 1; transform: none; }
+
+/* ------------------------------------------------------------ responsive -- */
+@media (max-width: 1080px) {
+  :root { --rail: 100%; }
+  .hero { grid-template-columns: 1fr; align-items: start; }
+  .hero-rail { align-self: auto; padding-bottom: 34px; }
+  .hero-display { padding-left: var(--gutter); }
+  .project { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .row { grid-template-columns: 1fr auto; row-gap: 8px; }
+  .row .contour { grid-column: 1 / -1; }
+  .row .signal { text-align: left; grid-column: 1 / -1; }
+  .sec-note { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  html.js .reveal { opacity: 1; transform: none; }
+}
